@@ -24,17 +24,24 @@ This behavior is consistent across repeated reloads of the page.
 ### Update: Unexpected behavior of 'Reload' and Caching under DevTools:
 
 Since the page exhibiting the bad caching behavior is small and isolated I decided to try and confirm that this issue only affects Chrome Extensions. I attempted to load the test page 
-`iconic_history.html` both directly via a 'file://' URL and via a simple http server running locally and see if it exhibited different behavior.  **To my surprise I witnessed the same behavior when pressing 'Reload' in these cases as I did with the Chrome Extension: The image resources always resulted in network requests when pressing Reload, even though the 'Disable Cache' option in DevTools is not checked.**
-As far as I can determine with this example, the 'Disable Cache' checkbox on the 'Network' timeline tab in DevTools is a NOP.
+`iconic_history.html` both directly via a 'file://' URL and via a simple http server running locally and see if it exhibited different behavior.  To my great surprise I witnessed the same behavior when pressing 'Reload' in these cases as I did with the Chrome Extension: The image resources always resulted in network requests when pressing Reload, even though the 'Disable Cache' option in DevTools is not checked.  **As far as I can determine, the 'Reload' button always bypasses the browser's http cache and the 'Disable Cache' checkbox on the 'Network' timeline tab in DevTools is a NOP.**
 
-If instead of hitting 'Reload' on the Extension page, one simply hits `Enter` in the Omnibox for the above page without modifying the URL, the result is a reload of the page that does use the Browser's http cache:
+If instead of hitting 'Reload' on the Extension page, one simply presses the `Enter` key in the Omnibox for the above page without modifying the URL, the result is a reload of the page that does use the Browser's http cache:
 
 ![Screenshot of Cached Reload of Network timeline](images/screenshot-cached-reload.png "Network timeline - cached reload")
 
-### Conclusions / Observations
+Note the '(from cache)' in the Size column, 0 ms load time for each image, and an overall load time for the page of 26 ms (compared to 291 ms in previous screenshot).
 
-I am left with two conclusions:
+### Observations
 
-1. The behavior of the 'Reload' button in the Browser and the 'Disable Cache' checkbox in the Network Pane do not at all match what I would intuitively expect. I expected that hitting 'Reload' would still use the browser's http cache unless 'Disable Cache' was explicitly checked.  I do not understand the purpose of the 'Disable Cache' checkbox since it appears to have no effect.
+Here are my observations thus far:
 
-2. Returning to the original issue that prompted all this:  The observed time to load and render the popup in my original Chrome Extension is *suspiciously consistent* with the uncached reload performance.  This leads me to  *strongly suspect* that resource requests by popups in Chrome Extensions are not hitting the browser's http cache.
+1. The real issue that prompted this investigation is a delay of several seconds for my popup to appear after clicking on the icon for my extension. There does not seem to be a way to see a timeline view for this exact period, so I'm opening the popup page in a browser tab as the best available proxy for the performance issue.
+
+2. The 'Reload' button appears to always bypass the browser's http cache.  This is not what I would expect to happen.
+
+3. The 'Disable Cache' checkbox on the Network pane in DevTools appears to be a NOP. Again, this is not what I would expect.
+
+4. The observed time to load and render the popup in my original Chrome Extension is *suspiciously consistent* with the time it takes to render the page when hitting 'Reload' in a browser tab. This leads me to  *strongly suspect* that resource requests by popups in Chrome Extensions are not hitting the browser's http cache.  But I can not conclusively prove this is the case because of (1) above.
+
+Hopefully this minimal example, the above observations, and the traces I've provided in the [open issue](https://code.google.com/p/chromium/issues/detail?id=482125) will be sufficient to investigate and resolve the issues outlined here.
