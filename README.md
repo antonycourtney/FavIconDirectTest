@@ -21,7 +21,7 @@ This is a minimal Chrome Extension to demonstrate a performance issue with how C
 Note in the timeline that the last four requests (for the favicon URLs) result in network roundtrips.  This happens even after hitting reload on the page (when I would expect the relevant items to be cached).
 This behavior is consistent across repeated reloads of the page.
 
-### Update: Unexpected behavior of 'Reload' and 'Disable Cache':
+### Update: Unexpected Behavior of 'Reload' and 'Disable Cache':
 
 Since the page exhibiting the bad caching behavior is small and isolated I decided to try and confirm that this issue only affects Chrome Extensions. I attempted to load the test page 
 `iconic_history.html` both directly via a 'file://' URL and via a simple http server running locally and see if it exhibited different behavior.  To my great surprise I witnessed the same behavior when pressing 'Reload' in these cases as I did with the Chrome Extension: The image resources always resulted in network requests when pressing Reload, even though the 'Disable Cache' option in DevTools is not checked.  **As far as I can determine, the 'Reload' button always bypasses the browser's http cache and the 'Disable Cache' checkbox on the 'Network' timeline tab in DevTools is a NOP.**
